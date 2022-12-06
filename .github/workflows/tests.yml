@@ -1,0 +1,28 @@
+name: Run Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+    paths:
+      - src/**
+      - tests/**
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - uses: abatilo/actions-poetry@v2.0.0
+      - name: Install Project
+        run: poetry install
+      - name: Run tests
+        run: |
+          poetry run coverage run -m pytest -vv tests
+          poetry run coverage report
+
