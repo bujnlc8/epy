@@ -13,7 +13,7 @@ from epy_reader.config import SUP_END, SUP_START
 
 
 class HTMLtoLines(HTMLParser):
-    para = {"p", "div"}
+    para = {"p", "div", "tr", "table", "caption"}
     inde = {"q", "dt", "dd", "blockquote"}
     pref = {"pre"}
     bull = {"li"}
@@ -259,6 +259,8 @@ class HTMLtoLines(HTMLParser):
             self.text[-1] += "]"
         elif tag in {"img", "image"}:
             self.text.append("")
+        elif tag in {"td", "th"}:
+            self.text[-1] += "\t"
         # formatting
         elif tag in self.ital:
             char_pos = CharPos(row=len(self.text) - 1, col=len(self.text[-1]))

@@ -28,4 +28,5 @@ release:
 
 install:
 	python -m build
+	pipx uninstall epy_reader
 	pipx install ./dist/epy_reader-2022.12.6-py3-none-any.whl --force
