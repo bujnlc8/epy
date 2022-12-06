@@ -20,6 +20,7 @@ class HTMLtoLines(HTMLParser):
     hide = {"script", "style", "head"}
     ital = {"i", "em"}
     bold = {"b", "strong"}
+    code = {"code"}
     # hide = {"script", "style", "head", ", "sub}
     # sup_lookup = "⁰¹²³⁴⁵⁶⁷⁸⁹"
     # sub_lookup = "₀₁₂₃₄₅₆₇₈₉"
@@ -156,6 +157,7 @@ class HTMLtoLines(HTMLParser):
         self.isbull = False
         self.ispref = False
         self.ishidden = False
+        self.iscode = False
         self.idhead = set()
         self.idinde = set()
         self.idbull = set()
@@ -204,6 +206,8 @@ class HTMLtoLines(HTMLParser):
             if len(self.bold_marks) == 0 or self.bold_marks[-1].is_valid():
                 char_pos = CharPos(row=len(self.text) - 1, col=len(self.text[-1]))
                 self.bold_marks.append(TextMark(start=char_pos))
+        elif tag in self.code:
+            self.iscode = True
         if self.sects != {""}:
             for i in attrs:
                 if i[0] == "id" and i[1] in self.sects:
@@ -233,6 +237,8 @@ class HTMLtoLines(HTMLParser):
                     self.sectsindex[len(self.text) - 1] = i[1]
 
     def handle_endtag(self, tag):
+        # reset
+        self.isbull = False
         if re.match("h[1-6]", tag) is not None:
             self.text.append("")
             self.text.append("")
@@ -261,6 +267,8 @@ class HTMLtoLines(HTMLParser):
             self.text.append("")
         elif tag in {"td", "th"}:
             self.text[-1] += "\t"
+        elif tag in {"code"}:
+            self.iscode = False
         # formatting
         elif tag in self.ital:
             char_pos = CharPos(row=len(self.text) - 1, col=len(self.text[-1]))
@@ -290,6 +298,10 @@ class HTMLtoLines(HTMLParser):
                 self.idinde.add(len(self.text) - 1)
             elif self.ispref:
                 self.idpref.add(len(self.text) - 1)
+            if self.iscode:
+                if (line.startswith('// ')) or line.startswith('#') or line in ('{', ):
+                    # self.text.append('')
+                    pass
 
     def get_structured_text(
         self, textwidth: Optional[int] = 0, starting_line: int = 0
